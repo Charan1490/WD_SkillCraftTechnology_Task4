@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Custom styling for animations and hover effects */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        .hover-btn:hover {
+            background-color: #2563EB !important;
+        }
+        /* Background image styling */
+        body {
+            background-image: url('images/image.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        /* Overlay for dimming the background */
+        .overlay {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+
+    <!-- App container with overlay effect -->
+    <div class="container mx-auto px-4 overlay rounded-lg shadow-lg">
+        <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">My To-Do List</h1>
+
+            <!-- Task Input Section -->
+            <div class="mb-8">
+                <input id="taskInput" type="text" placeholder="Enter your task..." class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <input id="taskDate" type="datetime-local" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <button onclick="addTask()" class="bg-blue-600 text-white w-full py-3 rounded-lg hover-btn hover:bg-blue-700 transition-all">
+                    Add Task
+                </button>
+            </div>
+
+            <!-- Task List Section -->
+            <ul id="taskList" class="space-y-4"></ul>
+
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+
+        // Function to add a new task
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskDate = document.getElementById('taskDate');
+            const taskText = taskInput.value.trim();
+            const taskDateTime = taskDate.value;
+
+            if (taskText !== "" && taskDateTime !== "") {
+                const task = {
+                    id: Date.now(),
+                    text: taskText,
+                    dateTime: taskDateTime,
+                    completed: false
+                };
+
+                tasks.push(task);
+                taskInput.value = "";
+                taskDate.value = "";
+                renderTasks();
+            }
+        }
+
+        // Function to render the task list
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskItem = document.createElement('li');
+                taskItem.className = 'flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow hover-scale transition-all';
+
+                const taskText = document.createElement('div');
+                taskText.className = `flex-1 text-lg ${task.completed ? 'line-through text-gray-400' : 'text-gray-800'}`;
+                taskText.textContent = `${task.text} (${new Date(task.dateTime).toLocaleString()})`;
+
+                const actions = document.createElement('div');
+                actions.className = 'space-x-3 flex';
+
+                // Complete Button
+                const completeButton = document.createElement('button');
+                completeButton.innerHTML = `<i class="fas fa-check-circle"></i>`;
+                completeButton.className = 'text-green-500 hover:text-green-700 transition-all';
+                completeButton.onclick = () => toggleComplete(task.id);
+
+                // Edit Button
+                const editButton = document.createElement('button');
+                editButton.innerHTML = `<i class="fas fa-edit"></i>`;
+                editButton.className = 'text-blue-500 hover:text-blue-700 transition-all';
+                editButton.onclick = () => editTask(task.id);
+
+                // Delete Button
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = `<i class="fas fa-trash"></i>`;
+                deleteButton.className = 'text-red-500 hover:text-red-700 transition-all';
+                deleteButton.onclick = () => deleteTask(task.id);
+
+                actions.append(completeButton, editButton, deleteButton);
+                taskItem.append(taskText, actions);
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        // Function to toggle task completion
+        function toggleComplete(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return { ...task, completed: !task.completed };
+                }
+                return task;
+            });
+            renderTasks();
+        }
+
+        // Function to edit a task
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            const newTaskText = prompt("Edit task:", task.text);
+            const newTaskDate = prompt("Edit date and time:", task.dateTime);
+
+            if (newTaskText !== null && newTaskDate !== null) {
+                tasks = tasks.map(t => {
+                    if (t.id === id) {
+                        return { ...t, text: newTaskText, dateTime: newTaskDate };
+                    }
+                    return t;
+                });
+                renderTasks();
+            }
+        }
+
+        // Function to delete a task
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+        }
+    </script>
+
+</body>
+</html>
